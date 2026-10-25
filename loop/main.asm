@@ -1,0 +1,2 @@
+    .code
+    option casemap : none
