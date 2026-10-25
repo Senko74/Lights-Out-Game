@@ -1,4 +1,4 @@
     .code
-    option casemap : none
+    include defs.inc
 
     end

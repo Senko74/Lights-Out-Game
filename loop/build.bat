@@ -1,4 +1,5 @@
 @echo off
+call "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat" >nul
 ml64 /nologo /c data.asm
 if errorlevel 1 exit /b
 ml64 /nologo /c game.asm
