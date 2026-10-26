@@ -5,6 +5,11 @@ extern StretchDIBits : proc
 extern GetModuleHandleA : proc
 extern DefWindowProcA : proc
 extern RegisterClassExA : proc
+extern PeekMessageA : proc
+extern DefWindowProcA : proc
+extern TranslateMessage : proc
+extern DispatchMessageA : proc
+extern PostQuitMessage : proc
 
 WNDCLASSEXA struct 
     cbSize dd ?
@@ -32,3 +37,18 @@ WS_MAXIMIZEBOX equ 00010000h
 WS_VISIBLE equ 10000000h
 
 WS_OVERLAPPEDWINDOW equ WS_OVERLAPPED or WS_CAPTION or WS_SYSMENU or WS_THICKFRAME or WS_MINIMIZEBOX or WS_MAXIMIZEBOX
+
+MSG struct
+    hwnd dq ?
+    message dd ?
+    fill dd ?
+    wParam dq ?
+    lParam dq ?
+    time dd ? 
+    point dq ?
+    fillb dd ?
+MSG ends
+
+PM_REMOVE equ 1
+
+

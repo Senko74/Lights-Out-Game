@@ -5,6 +5,7 @@ windowData WNDCLASSEXA <>
 className db "LightsOut", 0
 titleName db "Lights Out", 0
 windowHanfle dq ?
+msg MSG <> 
 
     .code
 main proc
@@ -65,6 +66,20 @@ createWindow :
     jmp windowLoop
 
 windowLoop:
+    lea rcx, msg
+    mov rdx, 0
+    mov r8, 0
+    mov r9, 0
+    mov dword ptr [rsp + 32], PM_REMOVE
+    call PeekMessageA
+    cmp eax, 0
+    je windowLoop
+    cmp msg.message, 18
+    je closeWindow
+    lea rcx, msg
+    call TranslateMessage
+    lea rcx, msg
+    call DispatchMessageA
     jmp windowLoop
 
 closeWindow:
@@ -78,13 +93,27 @@ errorRegister:
 errorCreation:
     mov rcx, 412
     call ExitProcess
+
+errorMessage :
+    mov rcx, 416
+    call ExitProcess
+
 main endp
 
 onWindowMessage proc
     sub rsp, 40
+    cmp edx, 2
+    je destroy
     call DefWindowProcA
     add rsp, 40
     ret
-onWindowMessage endp
 
+destroy :
+    mov rcx, 0
+    call PostQuitMessage
+    add rsp, 40
+    mov rax, 0
+    ret
+
+onWindowMessage endp
     end
