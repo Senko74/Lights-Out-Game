@@ -4,12 +4,17 @@ include defs.inc
 windowData WNDCLASSEXA <>
 className db "LightsOut", 0
 titleName db "Lights Out", 0
-windowHanfle dq ?
+windowHandle dq ?
 msg MSG <> 
+bitmapInfo BITMAPINFOHEADER <>
+hdc dq ?
+
+    .data?
+screenPixels dd 57600 dup(?)
 
     .code
 main proc
-    sub rsp, 104
+    sub rsp, 120
 createWindow :
     ; GetModuleHandleA return the memory adress of the programm (put it in the pile)
     mov rcx, 0
@@ -62,7 +67,19 @@ createWindow :
     ; window give in rax if it worked, 0 = error = close page
     cmp rax, 0
     je errorCreation
-    mov windowHanfle, rax
+    
+    mov bitmapInfo.biSize, sizeof bitmapInfo
+    mov bitmapInfo.biWidth, 320
+    mov bitmapInfo.biHeight, -180
+    mov bitmapInfo.biBitCount, 32
+    mov bitmapInfo.biCompression, 0
+
+    mov windowHandle, rax
+
+    mov rcx, windowHandle
+    call GetDC
+    mov hdc, rax
+
     jmp windowLoop
 
 windowLoop:
@@ -73,13 +90,44 @@ windowLoop:
     mov dword ptr [rsp + 32], PM_REMOVE
     call PeekMessageA
     cmp eax, 0
-    je windowLoop
+    je renderStart
     cmp msg.message, 18
     je closeWindow
     lea rcx, msg
     call TranslateMessage
     lea rcx, msg
     call DispatchMessageA
+    jmp windowLoop
+
+renderStart : 
+    mov rax, 0
+    lea r9, screenPixels
+    mov r8, 57600
+
+renderColorPixels :
+    cmp rax, r8
+    jge renderShowPixels
+    mov dword ptr[r9 + 4*rax], 00FFA500h
+    inc rax
+    jmp renderColorPixels
+
+renderShowPixels :
+    mov rcx, hdc
+    mov rdx, 0
+    mov r8, 0
+    mov r9, 1920
+    mov dword ptr[rsp + 32], 1080
+    mov dword ptr[rsp + 40], 0
+    mov dword ptr[rsp + 48], 0
+    mov dword ptr[rsp + 56], 320
+    mov qword ptr[rsp + 64], 180
+    lea rax, screenPixels
+    mov qword ptr[rsp + 72], rax
+    lea rax, bitmapInfo
+    mov qword ptr[rsp + 80], rax
+    mov qword ptr[rsp + 88], 0  
+    mov qword ptr[rsp + 96], 00CC0020h 
+    call StretchDIBits
     jmp windowLoop
 
 closeWindow:
@@ -116,4 +164,7 @@ destroy :
     ret
 
 onWindowMessage endp
+
+
+
     end

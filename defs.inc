@@ -10,6 +10,8 @@ extern DefWindowProcA : proc
 extern TranslateMessage : proc
 extern DispatchMessageA : proc
 extern PostQuitMessage : proc
+extern GetDC : proc
+extern StretchDIBits : proc
 
 WNDCLASSEXA struct 
     cbSize dd ?
@@ -51,4 +53,16 @@ MSG ends
 
 PM_REMOVE equ 1
 
-
+BITMAPINFOHEADER struct
+    biSize dd ?
+    biWidth dd ?
+    biHeight dd ?
+    biPlanes dw 1
+    biBitCount dw ?
+    biCompression dd ?
+    biSizeImage dd ?
+    biXPelsPerMeter dd ?
+    biYPelsPerMeter dd ?
+    biClrUsed dd ?
+    biClrImportant dd ?
+BITMAPINFOHEADER ends
