@@ -51,4 +51,40 @@ renderPlayer proc
     ret
 renderPlayer endp
 
+renderCloud proc
+    push r15
+    mov r11, 0 
+widthYLoop :
+    cmp r11, r9
+    jge finishDrawing
+    mov rax, 0
+    widthXLoop :
+        cmp rax, r8
+        jge nextLine
+        mov r15, rdx
+        add r15, r11
+        imul r15, 320
+        add r15, rcx
+        push r9
+        lea r9, screenPixels
+        push rdx
+        mov rdx, r15
+        imul rdx, 4
+        add rdx, r9
+        mov dword ptr[rdx + rax*4], 00FFFFFFh
+        pop rdx
+        pop r9
+        inc rax
+        jmp widthXLoop
+    
+nextLine:
+    inc r11
+    jmp widthYLoop
+
+
+finishDrawing :
+    pop r15
+    ret
+renderCloud endp
+
     end

@@ -10,7 +10,7 @@ bitmapInfo BITMAPINFOHEADER <>
 hdc dq ?
 playerP PLAYERDATA<>
 movPerSec dd 1
-
+cloud CLOUD <>
     .data?
 screenPixels dd 57600 dup(?)
 
@@ -119,7 +119,14 @@ renderBackground :
 
 renderer :
     call inputs
+    call moveCloud
+    mov ecx, cloud.x
+    mov edx, cloud.y
+    mov r8d, cloud.sx
+    mov r9d, cloud.sy
+    call renderCloud
     call renderPlayer
+    
     mov rcx, hdc
     mov rdx, 0
     mov r8, 0

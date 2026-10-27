@@ -64,6 +64,14 @@ PLAYERDATA struct
     speed dd 5
 PLAYERDATA ends
 
+CLOUD struct
+    x dd 250
+    y dd 75
+    sx dd 70
+    sy dd 20
+    speed dd 3
+CLOUD ends
+
 extern ExitProcess : proc
 extern CreateWindowExA : proc
 extern StretchDIBits : proc
@@ -85,5 +93,6 @@ externdef screenPixels : dword
 externdef renderPlayer : proc
 externdef playerP : PLAYERDATA
 externdef inputs : proc
-externdef movePlayerUp : proc
-externdef movePlayerDown : proc
+externdef cloud : CLOUD
+externdef renderCloud : proc
+externdef moveCloud : proc
