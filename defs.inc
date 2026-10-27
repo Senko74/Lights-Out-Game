@@ -1,20 +1,18 @@
 option casemap : none
-extern ExitProcess : proc
-extern CreateWindowExA : proc
-extern StretchDIBits : proc
-extern GetModuleHandleA : proc
-extern DefWindowProcA : proc
-extern RegisterClassExA : proc
-extern PeekMessageA : proc
-extern DefWindowProcA : proc
-extern TranslateMessage : proc
-extern DispatchMessageA : proc
-extern PostQuitMessage : proc
-extern GetDC : proc
-extern StretchDIBits : proc
-extern GetAsyncKeyState : proc
-extern LoadCursorA : proc
-extern Sleep : proc
+
+
+WS_OVERLAPPED equ 00000000h
+WS_CAPTION equ 00C00000h
+WS_SYSMENU equ 00080000h
+WS_THICKFRAME equ 00040000h
+WS_MINIMIZEBOX equ 00020000h
+WS_MAXIMIZEBOX equ 00010000h
+
+WS_VISIBLE equ 10000000h
+
+WS_POPUP equ 80000000h
+
+PM_REMOVE equ 1
 
 WNDCLASSEXA struct 
     cbSize dd ?
@@ -29,19 +27,7 @@ WNDCLASSEXA struct
     lpszMenuName dq ?
     lpszClassName dq ?
     hIconSm dq ?
-
 WNDCLASSEXA ends
-
-WS_OVERLAPPED equ 00000000h
-WS_CAPTION equ 00C00000h
-WS_SYSMENU equ 00080000h
-WS_THICKFRAME equ 00040000h
-WS_MINIMIZEBOX equ 00020000h
-WS_MAXIMIZEBOX equ 00010000h
-
-WS_VISIBLE equ 10000000h
-
-WS_POPUP equ 80000000h
 
 MSG struct
     hwnd dq ?
@@ -54,7 +40,6 @@ MSG struct
     fillb dd ?
 MSG ends
 
-PM_REMOVE equ 1
 
 BITMAPINFOHEADER struct
     biSize dd ?
@@ -78,3 +63,27 @@ PLAYERDATA struct
     life dd 3
     speed dd 5
 PLAYERDATA ends
+
+extern ExitProcess : proc
+extern CreateWindowExA : proc
+extern StretchDIBits : proc
+extern GetModuleHandleA : proc
+extern DefWindowProcA : proc
+extern RegisterClassExA : proc
+extern PeekMessageA : proc
+extern DefWindowProcA : proc
+extern TranslateMessage : proc
+extern DispatchMessageA : proc
+extern PostQuitMessage : proc
+extern GetDC : proc
+extern StretchDIBits : proc
+extern GetAsyncKeyState : proc
+extern LoadCursorA : proc
+extern Sleep : proc
+externdef drawRect : proc
+externdef screenPixels : dword
+externdef renderPlayer : proc
+externdef playerP : PLAYERDATA
+externdef inputs : proc
+externdef movePlayerUp : proc
+externdef movePlayerDown : proc
