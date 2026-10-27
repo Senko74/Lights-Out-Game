@@ -12,6 +12,9 @@ extern DispatchMessageA : proc
 extern PostQuitMessage : proc
 extern GetDC : proc
 extern StretchDIBits : proc
+extern GetAsyncKeyState : proc
+extern LoadCursorA : proc
+extern Sleep : proc
 
 WNDCLASSEXA struct 
     cbSize dd ?
@@ -38,7 +41,7 @@ WS_MAXIMIZEBOX equ 00010000h
 
 WS_VISIBLE equ 10000000h
 
-WS_OVERLAPPEDWINDOW equ WS_OVERLAPPED or WS_CAPTION or WS_SYSMENU or WS_THICKFRAME or WS_MINIMIZEBOX or WS_MAXIMIZEBOX
+WS_POPUP equ 80000000h
 
 MSG struct
     hwnd dq ?
@@ -66,3 +69,12 @@ BITMAPINFOHEADER struct
     biClrUsed dd ?
     biClrImportant dd ?
 BITMAPINFOHEADER ends
+
+PLAYERDATA struct
+    x dd 0
+    y dd 75
+    sx dd 15
+    sy dd 15
+    life dd 3
+    speed dd 5
+PLAYERDATA ends

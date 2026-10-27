@@ -8,6 +8,8 @@ windowHandle dq ?
 msg MSG <> 
 bitmapInfo BITMAPINFOHEADER <>
 hdc dq ?
+playerP PLAYERDATA<>
+movPerSec dd 1
 
     .data?
 screenPixels dd 57600 dup(?)
@@ -35,7 +37,10 @@ createWindow :
     mov windowData.hInstance, rax
     ; window options :
     mov windowData.hIcon, 0
-    mov windowData.hCursor, 0
+    mov rcx, 0
+    mov rdx, 7F00h
+    call LoadCursorA
+    mov windowData.hCursor, rax
     mov windowData.hbrBackground, 0
     mov windowData.lpszMenuName, 0
     lea rax, className
@@ -53,11 +58,11 @@ createWindow :
     mov rdx, r10
     lea r10, titleName
     mov r8, r10
-    mov r9, WS_OVERLAPPEDWINDOW or WS_VISIBLE
+    mov r9, WS_POPUP or WS_VISIBLE
     mov dword ptr [rsp + 32], 0
     mov dword ptr [rsp + 40], 0
-    mov dword ptr [rsp + 48], 1920
-    mov dword ptr [rsp + 56], 1080
+    mov dword ptr [rsp + 48], 1280
+    mov dword ptr [rsp + 56], 720
     mov qword ptr [rsp + 64], 0
     mov qword ptr [rsp + 72], 0
     mov rax, windowData.hInstance
@@ -103,20 +108,23 @@ renderStart :
     mov rax, 0
     lea r9, screenPixels
     mov r8, 57600
+    jmp renderBackground
 
-renderColorPixels :
+renderBackground :
     cmp rax, r8
-    jge renderShowPixels
-    mov dword ptr[r9 + 4*rax], 00FFA500h
+    jge renderer
+    mov dword ptr[r9 + 4*rax], 003A7BD5h
     inc rax
-    jmp renderColorPixels
+    jmp renderBackground
 
-renderShowPixels :
+renderer :
+    call inputs
+    call renderPlayer
     mov rcx, hdc
     mov rdx, 0
     mov r8, 0
-    mov r9, 1920
-    mov dword ptr[rsp + 32], 1080
+    mov r9, 1280
+    mov dword ptr[rsp + 32], 720
     mov dword ptr[rsp + 40], 0
     mov dword ptr[rsp + 48], 0
     mov dword ptr[rsp + 56], 320
@@ -128,6 +136,8 @@ renderShowPixels :
     mov qword ptr[rsp + 88], 0  
     mov qword ptr[rsp + 96], 00CC0020h 
     call StretchDIBits
+    mov rcx, 8
+    call Sleep
     jmp windowLoop
 
 closeWindow:
@@ -162,9 +172,115 @@ destroy :
     add rsp, 40
     mov rax, 0
     ret
-
 onWindowMessage endp
 
+drawRect proc
+    mov r10d, dword ptr[rsp + 40] ; color
+    push r15
+    mov r11, 0 
+widthYLoop :
+    cmp r11, r9
+    jge finishDrawing
+    mov rax, 0
+    widthXLoop :
+        cmp rax, r8
+        jge nextLine
+        mov r15, rdx
+        add r15, r11
+        imul r15, 320
+        add r15, rcx
+        push r9
+        lea r9, screenPixels
+        push rdx
+        mov rdx, r15
+        imul rdx, 4
+        add rdx, r9
+        mov dword ptr[rdx + rax*4], r10d
+        pop rdx
+        pop r9
+        inc rax
+        jmp widthXLoop
+    
+nextLine:
+    inc r11
+    jmp widthYLoop
+
+
+finishDrawing :
+    pop r15
+    ret
+drawRect endp
+
+renderPlayer proc 
+    sub rsp, 40
+    mov ecx, playerP.x
+    mov edx, playerP.y
+    mov r8d, playerP.sx
+    mov r9d, playerP.sy
+    mov dword ptr[rsp + 32], 000000FFh
+    call drawRect
+    add rsp, 40
+    ret
+renderPlayer endp
+
+inputs proc
+    sub rsp, 40
+
+chechMoveUp : 
+    mov rcx, 26h
+    call GetAsyncKeyState
+    test ax, 8000h
+    jnz moveUp
+
+chechMoveDown : 
+    mov rcx, 28h
+    call GetAsyncKeyState
+    test ax, 8000h
+    jnz moveDown
+    jmp endInputs
+
+moveUp :
+    call movePlayerUp
+    jmp endInputs
+
+moveDown :
+    call movePlayerDown
+    jmp endInputs
+
+endInputs :
+    add rsp, 40
+    ret
+
+inputs endp
+    
+
+
+movePlayerUp proc
+    mov eax, playerP.y
+    sub eax, playerP.speed
+    cmp eax, 0
+    jl endMove
+    mov playerP.y, eax
+endMove :   
+    ret
+movePlayerUp endp
+
+movePlayerDown proc
+    mov eax, playerP.y
+    add eax, playerP.speed
+    mov r10d, 180
+    sub r10d, playerP.sy
+    cmp eax, r10d
+    jg endMove
+    mov playerP.y, eax
+
+endMove :   
+    ret
+movePlayerDown endp
 
 
     end
+
+
+
+
