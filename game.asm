@@ -54,11 +54,13 @@ endMove :
 movePlayerDown endp
 
 moveCloud proc
+    sub rsp, 40
     mov eax, cloud.x
     sub eax, cloud.speed
     cmp eax, 0
     jle removeSize
     mov cloud.x, eax
+    call checkCollisions
     jmp endMove
 
 removeSize :
@@ -76,12 +78,33 @@ tpRight :
     mov cloud.x, eax
 
 endMove :
+    add rsp, 40
     ret
 moveCloud endp
 
-
-
-
-
+checkCollisions proc
+    sub rsp, 40
+    mov r10d, cloud.x
+    add r10d, cloud.sx
+    cmp playerP.x, r10d
+    jge finish
+    mov eax, playerP.x
+    add eax, playerP.sx
+    cmp eax, cloud.x
+    jle finish
+    mov eax, cloud.y
+    add eax, cloud.sy
+    cmp playerP.y, eax
+    jge finish
+    mov eax, playerP.y
+    add eax, playerP.sy
+    cmp eax, cloud.y
+    jle finish
+    mov rcx, 0
+    call PostQuitMessage
+finish : 
+    add rsp, 40
+    ret
+checkCollisions endp
 
     end
