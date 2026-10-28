@@ -93,6 +93,6 @@ externdef screenPixels : dword
 externdef renderPlayer : proc
 externdef playerP : PLAYERDATA
 externdef inputs : proc
-externdef cloud : CLOUD
+externdef cloud : dword
 externdef renderCloud : proc
 externdef moveCloud : proc

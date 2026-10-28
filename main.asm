@@ -10,7 +10,7 @@ bitmapInfo BITMAPINFOHEADER <>
 hdc dq ?
 playerP PLAYERDATA<>
 movPerSec dd 1
-cloud CLOUD <>
+clouds dd 10 dup(<>)
     .data?
 screenPixels dd 57600 dup(?)
 
