@@ -10,13 +10,25 @@ bitmapInfo BITMAPINFOHEADER <>
 hdc dq ?
 playerP PLAYERDATA<>
 movPerSec dd 1
-clouds dd 10 dup(<>)
+clouds CLOUD <250, 0, 70, 15, 3>, <250, 35, 70, 15, 2>, <250, 22, 70, 15, 4>, <250, 120, 70, 15, 1>
+
+
+isBlind dq 00000000h ; blind equal to 00989680h
+
+gameCountTick dq 0
+
+timeBlind dq 300
+blindTimer dq 0
+betweenBlindTimer dq 0
+
+
     .data?
 screenPixels dd 57600 dup(?)
 
     .code
 main proc
     sub rsp, 120
+    
 createWindow :
     ; GetModuleHandleA return the memory adress of the programm (put it in the pile)
     mov rcx, 0
@@ -95,38 +107,83 @@ windowLoop:
     mov dword ptr [rsp + 32], PM_REMOVE
     call PeekMessageA
     cmp eax, 0
-    je renderStart
+    je renderer
     cmp msg.message, 18
     je closeWindow
     lea rcx, msg
     call TranslateMessage
     lea rcx, msg
     call DispatchMessageA
+
+    restartLoop :
     jmp windowLoop
 
-renderStart : 
-    mov rax, 0
-    lea r9, screenPixels
-    mov r8, 57600
-    jmp renderBackground
-
-renderBackground :
-    cmp rax, r8
-    jge renderer
-    mov dword ptr[r9 + 4*rax], 003A7BD5h
-    inc rax
-    jmp renderBackground
-
 renderer :
+
+    add gameCountTick, 1
+    cmp isBlind, 00989680h
+    jne playerIsntBlind
+    playerIsBlind :
+        add blindTimer, 1
+        mov rax, timeBlind
+        cmp blindTimer, rax
+        jl EndBlindCount
+        call stopBlind
+        mov blindTimer, 0
+        jmp EndBlindCount
+    playerIsntBlind :
+        add betweenBlindTimer, 1
+        cmp betweenBlindTimer, timeBetweenBlind
+        jl EndBlindCount
+        call startBlind
+        mov betweenBlindTimer, 0
+    EndBlindCount :
+
     call inputs
-    call moveCloud
-    mov ecx, cloud.x
-    mov edx, cloud.y
-    mov r8d, cloud.sx
-    mov r9d, cloud.sy
-    call renderCloud
+    mov rax, 0
+    lea r10, screenPixels
+    mov rsi, 57600
+    mov rbp, isBlind
+    cmp rbp, 00989680h
+    jne renderBackground
+    renderBlack :
+        cmp rax, rsi
+        jge backgroundEnd
+        mov dword ptr[r10 + rax*4], 00000000h
+        inc rax
+        jmp renderBlack
+
+    renderBackground :
+        cmp rax, rsi
+        jge backgroundEnd
+        mov dword ptr[r10 + rax*4], 003A7BD5h
+        inc rax
+        jmp renderBackground
+
+    backgroundEnd :
+    mov rbx, 0 ; i
+    mov r15, 4 ; count
+    lea r13, clouds
+    loopClouds :
+        cmp rbx, r15
+        jge endRenderClouds
+        mov r14, sizeof CLOUD
+        imul r14, rbx
+        mov rcx, r13
+        mov rdx, r14
+        call moveCloud
+        mov rcx, r13
+        mov rdx, r14
+        call checkCollisions
+        mov ecx, [r13 + r14].CLOUD.x
+        mov edx, [r13 + r14].CLOUD.y
+        mov r8d, [r13 + r14].CLOUD.sx
+        mov r9d, [r13 + r14].CLOUD.sy
+        call renderCloud
+        inc rbx
+        jmp loopClouds
+    endRenderClouds : 
     call renderPlayer
-    
     mov rcx, hdc
     mov rdx, 0
     mov r8, 0
@@ -143,7 +200,7 @@ renderer :
     mov qword ptr[rsp + 88], 0  
     mov qword ptr[rsp + 96], 00CC0020h 
     call StretchDIBits
-    mov rcx, 8
+    mov rcx, 2
     call Sleep
     jmp windowLoop
 
@@ -180,6 +237,17 @@ destroy :
     mov rax, 0
     ret
 onWindowMessage endp
+
+stopBlind proc
+    mov isBlind, 00000000h
+    add timeBlind, 50
+    ret
+stopBlind endp
+
+startBlind proc
+    mov isBlind, 00989680h
+    ret
+startBlind endp
 
     end
 

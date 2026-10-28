@@ -9,10 +9,15 @@ WS_MINIMIZEBOX equ 00020000h
 WS_MAXIMIZEBOX equ 00010000h
 
 WS_VISIBLE equ 10000000h
-
 WS_POPUP equ 80000000h
 
 PM_REMOVE equ 1
+
+blindColor equ 00000000h
+blindCloudsColor equ 121212h
+
+timeBetweenBlind equ 600
+
 
 WNDCLASSEXA struct 
     cbSize dd ?
@@ -93,6 +98,8 @@ externdef screenPixels : dword
 externdef renderPlayer : proc
 externdef playerP : PLAYERDATA
 externdef inputs : proc
-externdef cloud : dword
+externdef clouds : CLOUD
 externdef renderCloud : proc
 externdef moveCloud : proc
+externdef isBlind : qword
+externdef checkCollisions : proc

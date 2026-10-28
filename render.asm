@@ -71,7 +71,14 @@ widthYLoop :
         mov rdx, r15
         imul rdx, 4
         add rdx, r9
-        mov dword ptr[rdx + rax*4], 00FFFFFFh
+        cmp isBlind, 00989680h
+        jne renderNormal
+        renderBlack :
+            mov dword ptr[rdx + rax*4], 00121212h
+            jmp endRender
+        renderNormal :
+            mov dword ptr[rdx + rax*4], 00FFFFFFh
+        endRender :
         pop rdx
         pop r9
         inc rax

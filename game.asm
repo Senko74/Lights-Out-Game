@@ -54,28 +54,43 @@ endMove :
 movePlayerDown endp
 
 moveCloud proc
+    ; rcx -> ptr tableau
+    ; rdx -> compteur
     sub rsp, 40
-    mov eax, cloud.x
-    sub eax, cloud.speed
+    mov r10, rcx
+    add r10, rdx
+    mov eax, [r10].CLOUD.x
+    sub eax, [r10].CLOUD.speed
     cmp eax, 0
     jle removeSize
-    mov cloud.x, eax
-    call checkCollisions
+    mov [r10].CLOUD.x, eax
     jmp endMove
 
 removeSize :
-    mov cloud.x, 0
-    mov eax, cloud.speed
-    sub cloud.sx, eax
-    cmp cloud.sx, 0
+    mov [r10].CLOUD.x, 0
+    mov eax, [r10].CLOUD.speed
+    sub [r10].CLOUD.sx, eax
+    cmp [r10].CLOUD.sx, 0
     jle tpRight
     jmp endMove
 
 tpRight :
-    mov cloud.sx, 70
+    rdtsc
+    mov edx, 0
+    mov r11d, 180
+    sub r11d, [r10].CLOUD.sy
+    div r11d
+    mov [r10].CLOUD.y, edx
+    mov [r10].CLOUD.sx, 70
+    rdtsc
+    mov edx, 0
+    mov r11d, 4
+    div r11d
+    add edx, 1
+    mov [r10].CLOUD.speed, edx
     mov eax, 320
-    sub eax, cloud.sx
-    mov cloud.x, eax
+    sub eax, [r10].CLOUD.sx
+    mov [r10].CLOUD.x, eax
 
 endMove :
     add rsp, 40
@@ -83,22 +98,24 @@ endMove :
 moveCloud endp
 
 checkCollisions proc
+    mov r11, rcx
+    add r11, rdx
     sub rsp, 40
-    mov r10d, cloud.x
-    add r10d, cloud.sx
+    mov r10d, [r11].CLOUD.x
+    add r10d, [r11].CLOUD.sx
     cmp playerP.x, r10d
     jge finish
     mov eax, playerP.x
     add eax, playerP.sx
-    cmp eax, cloud.x
+    cmp eax, [r11].CLOUD.x
     jle finish
-    mov eax, cloud.y
-    add eax, cloud.sy
+    mov eax, [r11].CLOUD.y
+    add eax, [r11].CLOUD.sy
     cmp playerP.y, eax
     jge finish
     mov eax, playerP.y
     add eax, playerP.sy
-    cmp eax, cloud.y
+    cmp eax, [r11].CLOUD.y
     jle finish
     mov rcx, 0
     call PostQuitMessage
