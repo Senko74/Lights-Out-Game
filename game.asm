@@ -3,6 +3,9 @@
 saveFileName db "bestScore.dat", 0
 fileHandle dq ?
 bytesDone dd ?
+
+minSpeed dd BASIC_MIN_SPEED
+maxSpeed dd BASIC_MAX_SPEED
     
     .code
     include defs.inc
@@ -40,6 +43,10 @@ moveDown :
 
 setAlive :
     mov isAlive, 00989680h
+    lea rcx, musicName
+    mov rdx, 0
+    mov r8, 20009h
+    call PlaySound
     jmp endInputs
 
 endInputs :
@@ -48,9 +55,10 @@ endInputs :
 inputs endp
     
 movePlayerUp proc
+    call moveEye
     mov eax, playerP.y
     sub eax, playerP.speed
-    cmp eax, 0
+    cmp eax, 1
     jl endMove
     mov playerP.y, eax
 endMove :   
@@ -58,9 +66,10 @@ endMove :
 movePlayerUp endp
 
 movePlayerDown proc
+    call moveEye
     mov eax, playerP.y
     add eax, playerP.speed
-    mov r10d, 180
+    mov r10d, 179
     sub r10d, playerP.sy
     cmp eax, r10d
     jg endMove
@@ -75,7 +84,7 @@ moveCloud proc
     sub rsp, 40
     mov r10, rcx
     add r10, rdx
-    mov eax, [r10].CLOUD.x
+    mov eax, [r10].CLOUD.x 
     sub eax, [r10].CLOUD.speed
     cmp eax, 0
     jle removeSize
@@ -107,7 +116,7 @@ tpRight :
     mov [r10].CLOUD.sx, 70
     rdtsc
     mov edx, 0
-    mov r11d, 4
+    mov r11d, maxSpeed
     div r11d
     add edx, 1
     mov [r10].CLOUD.speed, edx
@@ -147,16 +156,29 @@ finish :
     ret
 checkCollisions endp
 
+moveEye proc
+    mov eax, playerP.y
+    shr eax, 3
+    add eax, 70
+    mov eye.y, eax
+    ret
+moveEye endp
+
 resetGame proc
     sub rsp, 40
+    lea rcx, lobbyMusicName
+    mov rdx, 0
+    mov r8, 20009h
+    call PlaySound
     mov isBlind, 00000000h
     mov timeBlind, 300
     mov blindTimer, 0
     mov betweenBlindTimer, 0
     mov isAlive, 00000000h
-    mov playerP.x, 0
+    mov playerP.x, 3
     mov playerP.y, 75
     mov playerP.score, 0
+    mov maxSpeed, BASIC_MAX_SPEED
     call saveBestScore
     lea rax, clouds
     lea r8, cloudsSave

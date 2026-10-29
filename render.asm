@@ -33,7 +33,6 @@ nextLine:
     inc r11
     jmp widthYLoop
 
-
 finishDrawing :
     pop r15
     ret
@@ -41,11 +40,29 @@ drawRect endp
 
 renderPlayer proc 
     sub rsp, 40
+    mov ecx, playerP.x 
+    sub ecx, 1
+    mov edx, playerP.y
+    sub edx, 1
+    mov r8d, playerP.sx
+    add r8d, 2
+    mov r9d, playerP.sx
+    add r9d, 2
+    mov dword ptr[rsp + 32], 0014306Bh
+    call drawRect
     mov ecx, playerP.x
     mov edx, playerP.y
     mov r8d, playerP.sx
     mov r9d, playerP.sy
-    mov dword ptr[rsp + 32], 000000FFh
+    mov dword ptr[rsp + 32], 002A6FD1h
+    call drawRect
+    mov ecx, playerP.x 
+    add ecx, 6
+    mov edx, playerP.y
+    add edx, 6
+    mov r8d, 3
+    mov r9d, 3
+    mov dword ptr[rsp + 32], 004FEAFFh
     call drawRect
     add rsp, 40
     ret
@@ -77,7 +94,8 @@ widthYLoop :
             mov dword ptr[rdx + rax*4], 00121212h
             jmp endRender
         renderNormal :
-            mov dword ptr[rdx + rax*4], 00FFFFFFh
+            mov dword ptr[rdx + rax*4], 00E8EEF5h
+
         endRender :
         pop rdx
         pop r9

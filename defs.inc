@@ -11,6 +11,8 @@ WS_MAXIMIZEBOX equ 00010000h
 WS_VISIBLE equ 10000000h
 WS_POPUP equ 80000000h
 
+
+
 PM_REMOVE equ 1
 
 blindColor equ 00000000h
@@ -20,6 +22,8 @@ timeBetweenBlind equ 600
 
 NB_CLOUDS equ 4
 
+BASIC_MIN_SPEED equ 1
+BASIC_MAX_SPEED equ 1
 
 WNDCLASSEXA struct 
     cbSize dd ?
@@ -63,12 +67,12 @@ BITMAPINFOHEADER struct
 BITMAPINFOHEADER ends
 
 PLAYERDATA struct
-    x dd 0
+    x dd 3
     y dd 75
     sx dd 15
     sy dd 15
     life dd 3
-    speed dd 5
+    speed dd 3
     score dd 0
 PLAYERDATA ends
 
@@ -79,6 +83,14 @@ CLOUD struct
     sy dd 20
     speed dd 3
 CLOUD ends
+
+EYE struct
+    x dd 140
+    y dd 77
+    sx dd 10
+    sy dd 10
+    speed dd 1
+EYE ends
 
 extern ExitProcess : proc
 extern CreateWindowExA : proc
@@ -131,3 +143,10 @@ externdef saveFileName : byte
 externdef bytesDone : byte
 externdef fileHandle : qword
 externdef readBestScore : proc
+externdef minSpeed : dword
+externdef maxSpeed : dword
+extern GetSystemMetrics : proc
+externdef eye : EYE
+extern PlaySound : proc
+externdef musicName : byte
+externdef lobbyMusicName : byte

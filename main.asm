@@ -18,7 +18,7 @@ isAlive dq 00000000h ; alive equal to 00989680h
 
 gameCountTick dq 0
 
-timeBlind dq 300
+timeBlind dq 600
 blindTimer dq 0
 betweenBlindTimer dq 0
 score db 32 dup(?)
@@ -28,9 +28,15 @@ bestScore db 32 dup(?)
 bestScoreText db "Best Score : %d", 0
 
 waitingText db "Appuyer sur ESPACE", 0
-waitingTextB db "Fait 100% en Assembleur", 0
+waitingTextB db "Fait 97.2% en Assembleur", 0
 waitingTextC db "By Senko", 0
 maxScore dd ?
+screenWidth dq ?
+screenHeight dq ?
+eye EYE <>
+seed dd 12345678h
+musicName db "GameMusic.wav", 0
+lobbyMusicName db "LobbyMusic.wav", 0
 
     .data?
 screenPixels dd 57600 dup(?)
@@ -40,6 +46,11 @@ main proc
     sub rsp, 120
     
 createWindow :
+
+    lea rcx, lobbyMusicName
+    mov rdx, 0
+    mov r8, 20009h
+    call PlaySound
     ; GetModuleHandleA return the memory adress of the programm (put it in the pile)
     mov rcx, 0
     call GetModuleHandleA
@@ -74,6 +85,14 @@ createWindow :
     cmp ax, 0
     je errorRegister
 
+    mov rcx, 0
+    call GetSystemMetrics
+    mov screenWidth, rax
+
+    mov rcx, 1
+    call GetSystemMetrics
+    mov screenHeight, rax
+
     ; we put the parameters to call the function CreateWindowExA which create the page
     mov rcx, 0
     lea r10, className
@@ -81,10 +100,16 @@ createWindow :
     lea r10, titleName
     mov r8, r10
     mov r9, WS_POPUP or WS_VISIBLE
-    mov dword ptr [rsp + 32], 0
-    mov dword ptr [rsp + 40], 0
-    mov dword ptr [rsp + 48], 1280
-    mov dword ptr [rsp + 56], 720
+    mov rax, screenWidth
+    sub eax, 1280
+    shr eax, 1
+    mov dword ptr [rsp + 32], eax
+    mov rax, screenHeight
+    sub eax, 720
+    shr eax, 1
+    mov dword ptr [rsp + 40], eax
+    mov dword ptr[rsp + 48], 1280
+    mov dword ptr[rsp + 56], 720
     mov qword ptr [rsp + 64], 0
     mov qword ptr [rsp + 72], 0
     mov rax, windowData.hInstance
@@ -189,11 +214,29 @@ renderer :
     renderBackground :
         cmp rax, rsi
         jge backgroundEnd
-        mov dword ptr[r10 + rax*4], 003A7BD5h
+        mov dword ptr[r10 + rax*4], 005B9BD5h
         inc rax
         jmp renderBackground
 
     backgroundEnd :
+
+    mov rcx, 130
+    mov rdx, 60
+    mov r8, 45
+    mov r9, 45
+    mov rbp, 00FFFFFFh
+    mov [rsp + 32], rbp
+    call drawRect
+
+
+    mov ecx, eye.x
+    mov edx, eye.y
+    mov r8, 10
+    mov r9, 10
+    mov rbp, 00FF0000h
+    mov [rsp + 32], rbp
+    call drawRect
+
     mov rbx, 0 ; i
     mov r15, 4 ; count
     lea r13, clouds
@@ -218,13 +261,47 @@ renderer :
     endRenderClouds : 
     call renderPlayer
 
-    renderScreen : 
+    effect : 
+        mov r15, 0
+        lea rsi, screenPixels
+        effectLoop :
+            cmp r15, 57600
+            jge renderScreen
+            mov eax, seed
+            mov edx, eax
+            shl edx, 13
+            xor eax, edx
+            mov edx, eax
+            shr edx, 17
+            xor eax, edx
+            mov edx, eax
+            shl edx,5
+            xor eax, edx
+            mov seed, eax
+            and eax, 28
+            cmp eax, 0
+            jne finishEffect
+            
+            mov ebp, [rsi + r15*4]
+            mov r11d, ebp
+            shr r11d, 4
+            and r11d, 000F0F0Fh
+            sub ebp, r11d
+            mov [rsi + r15*4], ebp 
+            finishEffect :
+            inc r15
+            jmp effectLoop
+
+
+    renderScreen :
 
     mov rcx, hdc
     mov rdx, 0
     mov r8, 0
-    mov r9, 1280
-    mov dword ptr[rsp + 32], 720
+    mov rax, 1280
+    mov r9, rax
+    mov rax, 720
+    mov [rsp + 32], rax
     mov dword ptr[rsp + 40], 0
     mov dword ptr[rsp + 48], 0
     mov dword ptr[rsp + 56], 320
@@ -243,11 +320,14 @@ renderer :
     showWaitingText :
         lea rcx, waitingText
         call lstrlenA
+        mov rsi, rax
         mov rcx, hdc
+        mov rax, screenWidth
+        shr rax, 1
         mov rdx, 540
         mov r8, 300
         lea r9, waitingText
-        mov [rsp + 32], rax
+        mov [rsp + 32], rsi
         call TextOutA
 
         lea rcx, waitingTextB
@@ -288,8 +368,8 @@ renderer :
         mov r8d, playerP.score
         call wsprintfA
         mov rcx, hdc
-        mov rdx, 1215
-        mov r8, 700
+        mov rdx, 1200
+        mov r8, 685
         lea r9, score
         mov [rsp + 32], rax
         call TextOutA
@@ -334,12 +414,14 @@ onWindowMessage endp
 
 stopBlind proc
     mov isBlind, 00000000h
-    add timeBlind, 50
+    add timeBlind, 200
     ret
 stopBlind endp
 
 startBlind proc
     mov isBlind, 00989680h
+    add minSpeed, 1
+    add maxSpeed, 1
     ret
 startBlind endp
 
