@@ -18,6 +18,8 @@ blindCloudsColor equ 121212h
 
 timeBetweenBlind equ 600
 
+NB_CLOUDS equ 4
+
 
 WNDCLASSEXA struct 
     cbSize dd ?
@@ -67,6 +69,7 @@ PLAYERDATA struct
     sy dd 15
     life dd 3
     speed dd 5
+    score dd 0
 PLAYERDATA ends
 
 CLOUD struct
@@ -93,6 +96,7 @@ extern StretchDIBits : proc
 extern GetAsyncKeyState : proc
 extern LoadCursorA : proc
 extern Sleep : proc
+extern wsprintfA : proc
 externdef drawRect : proc
 externdef screenPixels : dword
 externdef renderPlayer : proc
@@ -103,3 +107,27 @@ externdef renderCloud : proc
 externdef moveCloud : proc
 externdef isBlind : qword
 externdef checkCollisions : proc
+externdef score : byte
+externdef scoreText : byte
+externdef hdc : qword
+extern TextOutA : proc
+extern SetBkMode : proc
+extern SetTextColor : proc
+extern lstrlenA : proc
+extern CreateFontA : proc
+extern SelectObject : proc
+extern GetStockObject : proc
+externdef isAlive : qword
+externdef maxScore : dword
+externdef timeBlind : qword
+externdef blindTimer : qword
+externdef betweenBlindTimer : qword
+externdef cloudsSave : CLOUD
+extern CreateFileA : proc
+extern ReadFile : proc
+extern WriteFile : proc
+extern CloseHandle : proc
+externdef saveFileName : byte
+externdef bytesDone : byte
+externdef fileHandle : qword
+externdef readBestScore : proc

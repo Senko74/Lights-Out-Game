@@ -1,3 +1,9 @@
+    .data
+
+saveFileName db "bestScore.dat", 0
+fileHandle dq ?
+bytesDone dd ?
+    
     .code
     include defs.inc
 
@@ -16,6 +22,12 @@ chechMoveDown :
     call GetAsyncKeyState
     test ax, 8000h
     jnz moveDown
+
+checkSpace : 
+    mov rcx, 20h
+    call GetAsyncKeyState
+    test ax, 8000h
+    jnz setAlive 
     jmp endInputs
 
 moveUp :
@@ -24,6 +36,10 @@ moveUp :
 
 moveDown :
     call movePlayerDown
+    jmp endInputs
+
+setAlive :
+    mov isAlive, 00989680h
     jmp endInputs
 
 endInputs :
@@ -75,6 +91,13 @@ removeSize :
     jmp endMove
 
 tpRight :
+    add playerP.score, 1
+    mov eax, maxScore
+    cmp playerP.score, eax
+    jle notBestScore
+    mov eax, playerP.score
+    mov maxScore, eax
+    notBestScore :
     rdtsc
     mov edx, 0
     mov r11d, 180
@@ -118,10 +141,64 @@ checkCollisions proc
     cmp eax, [r11].CLOUD.y
     jle finish
     mov rcx, 0
-    call PostQuitMessage
+    call resetGame
 finish : 
     add rsp, 40
     ret
 checkCollisions endp
 
+resetGame proc
+    sub rsp, 40
+    mov isBlind, 00000000h
+    mov timeBlind, 300
+    mov blindTimer, 0
+    mov betweenBlindTimer, 0
+    mov isAlive, 00000000h
+    mov playerP.x, 0
+    mov playerP.y, 75
+    mov playerP.score, 0
+    call saveBestScore
+    lea rax, clouds
+    lea r8, cloudsSave
+    mov r9, 0
+    mov r10, NB_CLOUDS * sizeof clouds / 8
+    changeLoop :
+        cmp r9, r10
+        jge stop
+        mov r11, [r8 + r9*8]
+        mov [rax + r9*8], r11
+        inc r9
+        jmp changeLoop
+
+
+stop :
+    add rsp, 40
+    ret
+resetGame endp
+
+saveBestScore proc
+    sub rsp, 56
+    lea rcx, saveFileName
+    mov rdx, 40000000h
+    mov r8, 0
+    mov r9, 0
+    mov qword ptr[rsp + 32], 2
+    mov qword ptr[rsp + 40], 80h
+    mov qword ptr[rsp + 48], 0
+    call CreateFileA
+    cmp rax, -1
+    je stopSave
+    mov fileHandle, rax
+    mov rcx, fileHandle
+    lea rdx, maxScore
+    mov r8, 4
+    lea r9, bytesDone
+    mov dword ptr[rsp + 32], 0
+    call WriteFile
+    mov rcx, fileHandle
+    call CloseHandle
+stopSave :
+    add rsp, 56
+    ret
+saveBestScore endp
     end

@@ -11,16 +11,26 @@ hdc dq ?
 playerP PLAYERDATA<>
 movPerSec dd 1
 clouds CLOUD <250, 0, 70, 15, 3>, <250, 35, 70, 15, 2>, <250, 22, 70, 15, 4>, <250, 120, 70, 15, 1>
-
+cloudsSave CLOUD <250, 0, 70, 15, 3>, <250, 35, 70, 15, 2>, <250, 22, 70, 15, 4>, <250, 120, 70, 15, 1>
 
 isBlind dq 00000000h ; blind equal to 00989680h
+isAlive dq 00000000h ; alive equal to 00989680h
 
 gameCountTick dq 0
 
 timeBlind dq 300
 blindTimer dq 0
 betweenBlindTimer dq 0
+score db 32 dup(?)
+scoreText db "Score : %d", 0
 
+bestScore db 32 dup(?)
+bestScoreText db "Best Score : %d", 0
+
+waitingText db "Appuyer sur ESPACE", 0
+waitingTextB db "Fait 100% en Assembleur", 0
+waitingTextC db "By Senko", 0
+maxScore dd ?
 
     .data?
 screenPixels dd 57600 dup(?)
@@ -84,6 +94,8 @@ createWindow :
     ; window give in rax if it worked, 0 = error = close page
     cmp rax, 0
     je errorCreation
+
+    mov windowHandle, rax
     
     mov bitmapInfo.biSize, sizeof bitmapInfo
     mov bitmapInfo.biWidth, 320
@@ -91,11 +103,18 @@ createWindow :
     mov bitmapInfo.biBitCount, 32
     mov bitmapInfo.biCompression, 0
 
-    mov windowHandle, rax
-
     mov rcx, windowHandle
     call GetDC
     mov hdc, rax
+    mov rcx, hdc
+    mov rdx, 1
+    call SetBkMode
+    mov rcx, hdc
+    mov rdx, 00FFFFFFh
+    call SetTextColor
+    call readBestScore
+
+
 
     jmp windowLoop
 
@@ -119,7 +138,22 @@ windowLoop:
     jmp windowLoop
 
 renderer :
+    call inputs
+    isPlayerAlive :
+        lea r10, screenPixels
+        mov rsi, 57600
+        mov rax, isAlive
+        cmp rax, 00989680h
+        je renderGame
+        mov rax, 0
+        renderWaitingScreen :
+            cmp rax, rsi
+            jge renderScreen
+            mov dword ptr[r10 + rax*4], 00FF0000h
+            inc rax
+            jmp renderWaitingScreen
 
+    renderGame :
     add gameCountTick, 1
     cmp isBlind, 00989680h
     jne playerIsntBlind
@@ -139,7 +173,6 @@ renderer :
         mov betweenBlindTimer, 0
     EndBlindCount :
 
-    call inputs
     mov rax, 0
     lea r10, screenPixels
     mov rsi, 57600
@@ -184,6 +217,9 @@ renderer :
         jmp loopClouds
     endRenderClouds : 
     call renderPlayer
+
+    renderScreen : 
+
     mov rcx, hdc
     mov rdx, 0
     mov r8, 0
@@ -200,7 +236,65 @@ renderer :
     mov qword ptr[rsp + 88], 0  
     mov qword ptr[rsp + 96], 00CC0020h 
     call StretchDIBits
-    mov rcx, 2
+
+    mov rax, isAlive
+    cmp rax, 00989680h
+    je showScore
+    showWaitingText :
+        lea rcx, waitingText
+        call lstrlenA
+        mov rcx, hdc
+        mov rdx, 540
+        mov r8, 300
+        lea r9, waitingText
+        mov [rsp + 32], rax
+        call TextOutA
+
+        lea rcx, waitingTextB
+        call lstrlenA
+        mov rcx, hdc
+        mov rdx, 540
+        mov r8, 340
+        lea r9, waitingTextB
+        mov [rsp + 32], rax
+        call TextOutA
+
+        lea rcx, waitingTextC
+        call lstrlenA
+        mov rcx, hdc
+        mov rdx, 540
+        mov r8, 380
+        lea r9, waitingTextC
+        mov [rsp + 32], rax
+        call TextOutA
+
+
+        lea rcx, bestScore
+        lea rdx, bestScoreText
+        mov r8d, maxScore
+        call wsprintfA
+        mov rcx, hdc
+        mov rdx, 20
+        mov r8, 690
+        lea r9, bestScore
+        mov [rsp + 32], rax
+        call TextOutA
+
+        jmp finishRender
+    
+    showScore :
+        lea rcx, score
+        lea rdx, scoreText
+        mov r8d, playerP.score
+        call wsprintfA
+        mov rcx, hdc
+        mov rdx, 1215
+        mov r8, 700
+        lea r9, score
+        mov [rsp + 32], rax
+        call TextOutA
+    finishRender :
+    mov rcx, 4
     call Sleep
     jmp windowLoop
 
@@ -248,6 +342,33 @@ startBlind proc
     mov isBlind, 00989680h
     ret
 startBlind endp
+
+readBestScore proc
+    sub rsp, 56
+
+    lea rcx, saveFileName
+    mov rdx, 80000000h
+    mov r8, 0
+    mov r9, 0
+    mov qword ptr[rsp + 32], 3
+    mov qword ptr[rsp + 40], 80h
+    mov qword ptr[rsp + 48], 0
+    call CreateFileA
+    cmp rax, -1
+    je stopRead
+    mov fileHandle, rax
+    mov rcx, fileHandle
+    lea rdx, maxScore
+    mov r8, 4
+    lea r9, bytesDone
+    mov dword ptr[rsp + 32], 0
+    call ReadFile
+    mov rcx, fileHandle
+    call CloseHandle
+    stopRead :
+    add rsp, 56
+    ret
+readBestScore endp
 
     end
 
