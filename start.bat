@@ -1,1 +1,2 @@
-.\lightsout.exe
+cd ./asm
+.\Mangeyko.exe

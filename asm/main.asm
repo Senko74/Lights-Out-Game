@@ -2,8 +2,8 @@ include defs.inc
 
     .data
 windowData WNDCLASSEXA <>
-className db "LightsOut", 0
-titleName db "Lights Out", 0
+className db "Mangeyko", 0
+titleName db "Mangeyko", 0
 windowHandle dq ?
 msg MSG <> 
 bitmapInfo BITMAPINFOHEADER <>
@@ -27,16 +27,18 @@ scoreText db "Score : %d", 0
 bestScore db 32 dup(?)
 bestScoreText db "Best Score : %d", 0
 
-waitingText db "Appuyer sur ESPACE", 0
-waitingTextB db "Fait 97.2% en Assembleur", 0
+waitingText db "Press SPACE to play", 0
+waitingTextB db "Made 97.6% in Assembly", 0
 waitingTextC db "By Senko", 0
 maxScore dd ?
 screenWidth dq ?
 screenHeight dq ?
 eye EYE <>
 seed dd 12345678h
-musicName db "GameMusic.wav", 0
-lobbyMusicName db "LobbyMusic.wav", 0
+Icon dq ?
+
+musicName db "..\assets\GameMusic.wav", 0
+lobbyMusicName db "..\assets\LobbyMusic.wav", 0
 
     .data?
 screenPixels dd 57600 dup(?)
@@ -47,6 +49,9 @@ main proc
     
 createWindow :
 
+    mov rcx, 0
+    mov edx, 40004000h
+    call waveOutSetVolume
     lea rcx, lobbyMusicName
     mov rdx, 0
     mov r8, 20009h
@@ -54,6 +59,10 @@ createWindow :
     ; GetModuleHandleA return the memory adress of the programm (put it in the pile)
     mov rcx, 0
     call GetModuleHandleA
+    mov rcx, rax
+    mov rdx, 1
+    call LoadIconA
+    mov Icon, rax
     push rax
     ; size of the struct windowData look into defs.inc
     mov windowData.cbSize, sizeof windowData
@@ -69,7 +78,8 @@ createWindow :
     ; we got back the memory adress of the program which was in the pile to put it in the strcu (to do it in order)
     mov windowData.hInstance, rax
     ; window options :
-    mov windowData.hIcon, 0
+    mov rax, Icon
+    mov windowData.hIcon, rax
     mov rcx, 0
     mov rdx, 7F00h
     call LoadCursorA
@@ -78,7 +88,8 @@ createWindow :
     mov windowData.lpszMenuName, 0
     lea rax, className
     mov windowData.lpszClassName, rax
-    mov windowData.hIconSm, 0
+    mov rax, Icon
+    mov windowData.hIconSm, rax
     ; we send to window the memory of the struct, if its good it continue else it close the window with 404 
     lea rcx, windowData
     call RegisterClassExA
@@ -348,7 +359,6 @@ renderer :
         mov [rsp + 32], rax
         call TextOutA
 
-
         lea rcx, bestScore
         lea rdx, bestScoreText
         mov r8d, maxScore
@@ -359,6 +369,7 @@ renderer :
         lea r9, bestScore
         mov [rsp + 32], rax
         call TextOutA
+
 
         jmp finishRender
     

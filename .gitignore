@@ -1,3 +1,5 @@
 *.obj
-*.wav
 *.png
+*.res
+*.rc
+*.ico

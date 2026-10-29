@@ -150,3 +150,5 @@ externdef eye : EYE
 extern PlaySound : proc
 externdef musicName : byte
 externdef lobbyMusicName : byte
+extern waveOutSetVolume : proc
+extern LoadIconA : proc
