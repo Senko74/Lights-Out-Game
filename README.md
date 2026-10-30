@@ -14,5 +14,5 @@ ___
 
 **How to build :**
 In a terminal : 
-`.\build
- .\Start `
+.\build
+ .\Start 
