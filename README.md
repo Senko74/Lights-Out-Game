@@ -12,7 +12,7 @@ ___
 - Arrow DOWN -> Move Down
 - Space -> Start a new game
 
-**How to build : **
+**How to build :**
 In a terminal : 
 `.\build
  .\Start `
