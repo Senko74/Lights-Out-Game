@@ -6,7 +6,7 @@
 
 ___
 
-**How to play : **
+**How to play :**
 
 - Arrow UP -> Move Up
 - Arrow DOWN -> Move Down
