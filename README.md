@@ -6,15 +6,15 @@
 
 ___
 
-**How to play :**
+# How to play :
 
 - Arrow UP -> Move Up
 - Arrow DOWN -> Move Down
 - Space -> Start a new game
 
-**How to build :**
+# How to build :
 
-In a terminal : 
+**In a terminal : **
 ```
  .\build
  .\Start
