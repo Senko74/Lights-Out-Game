@@ -11,11 +11,11 @@
 - Arrow UP -> Move Up
 - Arrow DOWN -> Move Down
 - Space -> Start a new game
-- 
+  
 
 # How to build :
 
-**In a terminal : **
+**In a terminal :**
 ```
  .\build
  .\Start
